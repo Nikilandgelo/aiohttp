@@ -1,0 +1,32 @@
+volumes:
+  postgresql_volume:
+
+networks:
+  backend:
+
+services:
+  postgresql:
+    image: postgres:16-alpine
+    container_name: postgresql
+    env_file:
+      - ./.env
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 5s
+      retries: 6
+    restart: unless-stopped
+    volumes:
+      - postgresql_volume:/var/lib/postgresql/data  
+    networks:
+      - backend
+  aiohttp:
+    build: .
+    container_name: aiohttp_app
+    depends_on:
+      - postgresql
+    env_file:
+      - ./.env
+    ports:
+      - "5555:8080"
+    networks:
+      - backend
